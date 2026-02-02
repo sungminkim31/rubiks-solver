@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Cube3D } from './components/Cube3D';
 import { Camera, Play, CheckCircle, ArrowRight, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,7 +32,7 @@ const App = () => {
               <div className="w-3 h-3 rounded-full bg-green-500" />
             </div>
           </div>
-          <Cube3D cubeState={null} />
+          <Cube3D />
           <div className="mt-4 flex justify-center gap-4">
              <button className="p-2 glass-panel hover:bg-white/10 transition-colors">
                <RotateCcw size={20} />
