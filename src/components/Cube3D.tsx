@@ -212,10 +212,10 @@ export const Cube3D = forwardRef((_props, ref) => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: '400px' }}>
-      <Canvas camera={{ position: [3, 3, 3], fov: 60 }}>
-        <ambientLight intensity={2.5} />
-        <pointLight position={[10, 10, 10]} intensity={1.5} />
+    <div style={{ width: '100%', height: '100%', minHeight: '300px' }}>
+      <Canvas camera={{ position: [5, 5, 5], fov: 45 }}>
+        <ambientLight intensity={1.5} />
+        <pointLight position={[10, 10, 10]} intensity={1.0} />
         <group ref={groupRef}>
           {cubiesData.map((c, i) => (
             <Cubie 
