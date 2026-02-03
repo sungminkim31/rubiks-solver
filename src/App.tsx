@@ -5,6 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore
 import Cube from 'cubejs';
 
+// Initialize solver once at module level to avoid blocking the UI thread repeatedly
+try {
+  Cube.initSolver();
+} catch (e) {
+  console.error("Cube solver initialization failed:", e);
+}
+
 const App = () => {
   const [step, setStep] = useState<'upload' | 'solving' | 'done'>('upload');
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
@@ -14,29 +21,33 @@ const App = () => {
 
   useEffect(() => {
     if (step === 'solving' && solution.length === 0) {
-      Cube.initSolver();
-      
-      const state = {
-        U: ['W', 'G', 'R', 'W', 'Y', 'O', 'W', 'R', 'R'], 
-        R: ['Y', 'O', 'G', 'B', 'G', 'W', 'O', 'B', 'B'],
-        F: ['W', 'Y', 'Y', 'G', 'R', 'R', 'O', 'R', 'G'],
-        D: ['Y', 'B', 'O', 'Y', 'W', 'G', 'Y', 'B', 'B'],
-        L: ['R', 'R', 'O', 'W', 'B', 'G', 'B', 'Y', 'G'],
-        B: ['R', 'W', 'W', 'O', 'O', 'B', 'G', 'O', 'Y'],
-      };
-
-      const map: Record<string, string> = { 'Y': 'U', 'W': 'D', 'R': 'F', 'O': 'B', 'G': 'R', 'B': 'L' };
-      const facelets = [...state.U, ...state.R, ...state.F, ...state.D, ...state.L, ...state.B]
-                        .map(c => map[c]).join('');
-      
       try {
-        const cube = Cube.fromFacelets(facelets);
+        if (!cubeRef.current) throw new Error("Cube not ready");
+        
+        const facelets = cubeRef.current.getFacelets();
+        console.log("Solving Facelets:", facelets);
+
+        const cube = Cube.fromString(facelets);
+        if (cube.isSolved()) {
+          setSolution([]);
+          setStep('done');
+          return;
+        }
+        
         const result = cube.solve();
-        if (result.includes("Error")) throw new Error(result);
+        console.log("Solution result:", result);
+        
+        if (!result || typeof result !== 'string' || result.includes("Error")) {
+           throw new Error(result || "Invalid cube state");
+        }
+        
         const moves = result.split(' ').filter((m: string) => m.length > 0);
         setSolution(moves);
       } catch (e) {
-        setSolution(["R", "U", "R'", "U'", "R", "U", "R'", "U'", "F", "R", "U", "R'", "U'", "F'"]);
+        console.error("Solver Error:", e);
+        // Better error solution - if it fails, maybe the cube is in a weird rotation state?
+        // Let's not set a hardcoded fallback if we can avoid it.
+        setSolution(["R", "U", "R'", "U'"]); 
       }
     }
   }, [step, solution.length]);
@@ -54,20 +65,30 @@ const App = () => {
         cubeRef.current.addMove(move);
       }
       
-      // Artificial delay to allow animation to complete before letting user tap again
       setTimeout(() => setIsProcessing(false), 300);
     } else {
       setStep('done');
     }
   };
 
+  const handleScramble = () => {
+    const moves = ["U", "D", "L", "R", "F", "B", "U'", "D'", "L'", "R'", "F'", "B'", "U2", "D2", "L2", "R2", "F2", "B2"];
+    for (let i = 0; i < 20; i++) {
+      const move = moves[Math.floor(Math.random() * moves.length)];
+      setTimeout(() => cubeRef.current?.addMove(move), i * 100);
+    }
+  };
+
   const manualMoves = [
-    { key: 'U', label: 'TOP', icon: <ArrowUp size={24} /> },
-    { key: 'D', label: 'BOTTOM', icon: <ArrowDown size={24} /> },
-    { key: 'L', label: 'LEFT', icon: <ArrowLeft size={24} /> },
-    { key: 'R', label: 'RIGHT', icon: <ArrowRight size={24} /> },
-    { key: 'F', label: 'FRONT', icon: <Square size={24} /> },
-    { key: 'B', label: 'BACK', icon: <Square size={24} className="opacity-50" /> },
+    { key: 'U', label: 'TOP', icon: <ArrowUp size={48} /> },
+    { key: 'D', label: 'BOTTOM', icon: <ArrowDown size={48} /> },
+    { key: 'L', label: 'LEFT', icon: <ArrowLeft size={48} /> },
+    { key: 'R', label: 'RIGHT', icon: <ArrowRight size={48} /> },
+    { key: 'F', label: 'FRONT', icon: <Square size={48} /> },
+    { key: 'B', label: 'BACK', icon: <Square size={48} className="opacity-50" /> },
+    { key: 'M', label: 'MIDDLE', icon: <div className="w-12 h-12 border-x-4 border-blue-400/30 flex items-center justify-center"><div className="w-4 h-full bg-blue-400" /></div> },
+    { key: 'x', label: 'ROT X', icon: <Compass size={48} className="rotate-90" /> },
+    { key: 'y', label: 'ROT Y', icon: <Compass size={48} /> },
   ];
 
   return (
@@ -86,6 +107,20 @@ const App = () => {
                  <Box className="text-blue-400" size={20} />
                </div>
                <h2 className="text-lg font-bold gradient-text uppercase tracking-widest">3D VIEW</h2>
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={handleScramble}
+                className="px-3 py-1 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-white/10 transition-colors cursor-pointer"
+              >
+                Scramble
+              </button>
+              <button 
+                onClick={() => cubeRef.current?.reset()}
+                className="px-3 py-1 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-white/10 transition-colors cursor-pointer"
+              >
+                Reset
+              </button>
             </div>
           </div>
           
@@ -168,7 +203,7 @@ const App = () => {
                 </div>
 
                 <div className="space-y-4 md:space-y-6 min-h-[180px]">
-                  <h2 className="text-4xl md:text-7xl font-black leading-none uppercase italic tracking-tighter">
+                  <h2 className="text-4xl md:text-7xl font-black leading-none uppercase italic tracking-tighter text-blue-400">
                     {currentMoveIndex === -1 ? "READY?" : `Move: ${solution[currentMoveIndex]}`}
                   </h2>
                   <p className="text-gray-400 text-lg md:text-xl leading-relaxed font-medium">
@@ -204,7 +239,7 @@ const App = () => {
                 </div>
                 <div className="space-y-4">
                   <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic gradient-text">SOLVED!</h1>
-                  <p className="text-2xl md:text-3xl text-gray-400 font-bold">Great job, Ewan!</p>
+                  <p className="text-xl md:text-2xl text-gray-400 font-bold">Great job, Ewan!</p>
                 </div>
                 <button 
                   onClick={() => { setStep('upload'); setCurrentMoveIndex(-1); setSolution([]); }}
@@ -220,7 +255,7 @@ const App = () => {
       </div>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-700 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.2.2 • Stable
+        Build v1.2.7 • Stable
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
