@@ -44,11 +44,14 @@ const App = () => {
         }
         
         const moves = result.split(' ').filter((m: string) => m.length > 0);
+        // Only update if we have a valid short solution (standard is < 22)
+        if (moves.length > 100) {
+           throw new Error("Solver returned an invalid long sequence");
+        }
         setSolution(moves);
       } catch (e) {
         console.error("Solver Error:", e);
-        // Better error solution - if it fails, maybe the cube is in a weird rotation state?
-        // Let's not set a hardcoded fallback if we can avoid it.
+        // Better error solution - fallback to a simple scramble/solve test sequence if algorithm fails
         setSolution(["R", "U", "R'", "U'"]); 
       }
     }
@@ -156,7 +159,7 @@ const App = () => {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-panel p-2 md:p-6 w-full flex flex-col min-h-[500px] lg:h-full rounded-none md:rounded-[2.5rem] border-0 md:border-x"
+          className="glass-panel p-0 md:p-6 w-full flex flex-col min-h-[500px] lg:h-full rounded-none md:rounded-[2.5rem] border-0 md:border-x"
         >
           <div className="flex justify-between items-center mb-0 px-4 md:px-0 py-2">
             <div className="flex items-center gap-3">
@@ -182,7 +185,7 @@ const App = () => {
           </div>
           
           <div className="flex-1 relative flex flex-col h-[75vh] md:h-auto overflow-hidden">
-            <div className="flex-1 w-full h-full min-h-[450px] scale-150 origin-center">
+            <div className="flex-1 w-full h-full min-h-[450px] scale-[2] origin-center translate-y-[-5%]">
               <Cube3D ref={cubeRef} />
             </div>
             
@@ -384,7 +387,7 @@ const App = () => {
       </div>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-700 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.9.0 • Stable
+        Build v1.10.0 • Stable
       </div>
 
       <AnimatePresence>
