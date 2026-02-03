@@ -212,8 +212,8 @@ export const Cube3D = forwardRef((_props, ref) => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: '300px' }}>
-      <Canvas camera={{ position: [5, 5, 5], fov: 45 }}>
+    <div style={{ width: '100%', height: '100%', minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Canvas style={{ width: '100%', height: '100%' }} camera={{ position: [5, 5, 5], fov: 45 }}>
         <ambientLight intensity={1.5} />
         <pointLight position={[10, 10, 10]} intensity={1.0} />
         <group ref={groupRef}>

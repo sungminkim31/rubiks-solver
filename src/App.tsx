@@ -43,15 +43,15 @@ const App = () => {
            throw new Error(result || "Invalid cube state");
         }
         
-        const moves = result.split(' ').filter((m: string) => m.length > 0 && m.length < 5);
+        let moves = result.split(' ').filter((m: string) => m.length > 0 && m.length < 5);
         
         // Final sanity check for kid-friendly solution lengths
-        if (moves.length > 50 || moves.length === 0) {
+        if (moves.length > 30 || moves.length === 0) {
            console.warn("Solution too long or empty, forcing test sequence");
-           setSolution(["R", "U", "R'", "U'"]);
-        } else {
-           setSolution(moves);
+           moves = ["R", "U", "R'", "U'"];
         }
+        
+        setSolution(moves);
       } catch (e) {
         console.error("Solver Error:", e);
         setSolution(["R", "U", "R'", "U'"]); 
@@ -66,6 +66,26 @@ const App = () => {
     setStep('solving');
   };
 
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const autoPlayTimer = useRef<any>(null);
+
+  useEffect(() => {
+    if (isAutoPlaying) {
+      autoPlayTimer.current = setInterval(() => {
+        if (currentMoveIndex < solution.length - 1) {
+          handleNextMove();
+        } else {
+          setIsAutoPlaying(false);
+        }
+      }, 1000);
+    } else {
+      clearInterval(autoPlayTimer.current);
+    }
+    return () => clearInterval(autoPlayTimer.current);
+  }, [isAutoPlaying, currentMoveIndex, solution.length]);
+
+  const toggleAutoPlay = () => setIsAutoPlaying(!isAutoPlaying);
+
   const handleNextMove = () => {
     if (isProcessing) return;
     const nextIndex = currentMoveIndex + 1;
@@ -76,6 +96,7 @@ const App = () => {
       if (cubeRef.current) cubeRef.current.addMove(move);
       setTimeout(() => setIsProcessing(false), 350);
     } else if (solution.length > 0) {
+      setIsAutoPlaying(false);
       setStep('done');
     }
   };
@@ -140,16 +161,14 @@ const App = () => {
         </div>
 
         {/* Center: GIANT Cube Viewport */}
-        <div className="w-full aspect-square relative bg-[#0a0a0a] overflow-visible flex items-center justify-center">
-          <div className="absolute inset-0 z-0 flex items-center justify-center">
-            <div style={{ transform: 'scale(1.0)', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Cube3D ref={cubeRef} />
-            </div>
+        <div className="w-full flex-1 relative bg-[#0a0a0a] overflow-hidden flex items-center justify-center p-4">
+          <div className="w-full h-full max-w-sm max-h-sm flex items-center justify-center scale-150 md:scale-100">
+             <Cube3D ref={cubeRef} />
           </div>
         </div>
 
         {/* Bottom Panel: Player Controls */}
-        <div className="w-full bg-black/90 border-t border-white/10 z-20 pb-12 pt-6 px-6 flex flex-col gap-8">
+        <div className="w-full bg-black/90 border-t border-white/10 z-20 pb-12 pt-6 px-6 flex flex-col gap-8 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
           <AnimatePresence mode="wait">
             {step === 'upload' ? (
               <motion.div key="upload" initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full space-y-6">
@@ -187,15 +206,33 @@ const App = () => {
                 </div>
 
                 {/* GIANT BUTTONS */}
-                <div className="grid grid-cols-2 gap-6">
-                  <button onClick={handlePrevMove} disabled={isProcessing || currentMoveIndex < 0} className="py-10 bg-white/5 rounded-[3rem] flex items-center justify-center gap-4 text-white/50 active:bg-white/10 disabled:opacity-5 shadow-lg border border-white/5">
-                    <Rewind size={48} fill="currentColor" />
-                    <span className="font-black text-2xl">BACK</span>
+                <div className="flex flex-col gap-4">
+                  <button 
+                    onClick={toggleAutoPlay}
+                    className={`w-full py-6 rounded-[2.5rem] flex items-center justify-center gap-4 text-white shadow-xl active:scale-95 transition-all ${isAutoPlaying ? 'bg-orange-500' : 'bg-green-600'}`}
+                  >
+                    {isAutoPlaying ? <Rewind className="animate-pulse" /> : <Play fill="currentColor" />}
+                    <span className="font-black text-2xl">{isAutoPlaying ? 'STOP AUTO' : 'AUTO PLAY'}</span>
                   </button>
-                  <button onClick={currentMoveIndex === solution.length - 1 ? () => setStep('done') : handleNextMove} disabled={isProcessing || (currentMoveIndex >= solution.length - 1 && solution.length === 0)} className={`py-10 rounded-[3rem] flex items-center justify-center gap-4 text-white shadow-[0_20px_50px_rgba(59,130,246,0.4)] active:scale-95 transition-all ${currentMoveIndex === solution.length - 1 ? 'bg-green-500' : 'bg-blue-600'}`}>
-                    <span className="font-black text-3xl">{currentMoveIndex === solution.length - 1 ? 'DONE' : 'NEXT'}</span>
-                    <FastForward size={48} fill="currentColor" />
-                  </button>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <button 
+                      onClick={handlePrevMove}
+                      disabled={isProcessing || currentMoveIndex < 0}
+                      className="py-10 bg-white/5 rounded-[2.5rem] flex items-center justify-center gap-4 text-white/50 active:bg-white/10 disabled:opacity-5 shadow-lg border border-white/5"
+                    >
+                      <Rewind size={48} fill="currentColor" />
+                      <span className="font-black text-2xl">BACK</span>
+                    </button>
+                    <button 
+                      onClick={currentMoveIndex === solution.length - 1 ? () => setStep('done') : handleNextMove}
+                      disabled={isProcessing || (currentMoveIndex >= solution.length - 1 && solution.length === 0)}
+                      className={`py-10 rounded-[2.5rem] flex items-center justify-center gap-4 text-white shadow-[0_20px_50px_rgba(59,130,246,0.4)] active:scale-95 transition-all ${currentMoveIndex === solution.length - 1 ? 'bg-green-500' : 'bg-blue-600'}`}
+                    >
+                      <span className="font-black text-3xl">{currentMoveIndex === solution.length - 1 ? 'DONE' : 'NEXT'}</span>
+                      <FastForward size={48} fill="currentColor" />
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ) : (
@@ -218,7 +255,7 @@ const App = () => {
       </div>
 
       <div className="w-full text-center py-4 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.13.0 • Stable
+        Build v1.14.0 • Stable
       </div>
 
       <AnimatePresence>
