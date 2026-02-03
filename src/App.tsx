@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Cube3D } from './components/Cube3D';
-import { Play, CheckCircle, ArrowRight, Box, Compass, ArrowUp, ArrowDown, ArrowLeft, Square } from 'lucide-react';
+import { Play, CheckCircle, ArrowRight, ArrowLeft, Box, Compass, ArrowUp, ArrowDown, Square, RotateCcw, FastForward, Rewind } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore
 import Cube from 'cubejs';
@@ -66,8 +66,52 @@ const App = () => {
       }
       
       setTimeout(() => setIsProcessing(false), 300);
-    } else {
+    } else if (solution.length > 0) {
       setStep('done');
+    }
+  };
+
+  const handlePrevMove = () => {
+    if (isProcessing || currentMoveIndex < 0) return;
+
+    setIsProcessing(true);
+    const move = solution[currentMoveIndex];
+    
+    if (cubeRef.current) {
+      cubeRef.current.undoMove(move);
+    }
+    
+    setCurrentMoveIndex(currentMoveIndex - 1);
+    setTimeout(() => setIsProcessing(false), 300);
+  };
+
+  const handleSeek = (index: number) => {
+    if (isProcessing || index === currentMoveIndex) return;
+
+    const diff = index - currentMoveIndex;
+    setIsProcessing(true);
+
+    if (diff > 0) {
+      // Forward
+      for (let i = 1; i <= diff; i++) {
+        const move = solution[currentMoveIndex + i];
+        setTimeout(() => cubeRef.current?.addMove(move), (i - 1) * 350);
+      }
+      setTimeout(() => {
+        setCurrentMoveIndex(index);
+        setIsProcessing(false);
+      }, diff * 350);
+    } else {
+      // Backward
+      const absDiff = Math.abs(diff);
+      for (let i = 0; i < absDiff; i++) {
+        const move = solution[currentMoveIndex - i];
+        setTimeout(() => cubeRef.current?.undoMove(move), i * 350);
+      }
+      setTimeout(() => {
+        setCurrentMoveIndex(index);
+        setIsProcessing(false);
+      }, absDiff * 350);
     }
   };
 
@@ -191,34 +235,97 @@ const App = () => {
                 animate={{ x: 0, opacity: 1 }}
                 className="space-y-6 md:space-y-8 p-4"
               >
+                {/* Header Stats */}
                 <div className="flex items-center justify-between text-[10px] font-black text-blue-400 uppercase tracking-widest">
-                  <span>STEP {currentMoveIndex + 1} OF {solution.length}</span>
-                  <span>{solution.length - (currentMoveIndex + 1)} STEPS LEFT</span>
-                </div>
-                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                   <div 
-                    className="h-full bg-blue-500 transition-all duration-500" 
-                    style={{ width: `${((currentMoveIndex + 1) / solution.length) * 100}%` }} 
-                   />
+                  <span>MOVE {currentMoveIndex + 1} OF {solution.length}</span>
+                  <span>{Math.max(0, solution.length - (currentMoveIndex + 1))} REMAINING</span>
                 </div>
 
-                <div className="space-y-4 md:space-y-6 min-h-[180px]">
-                  <h2 className="text-4xl md:text-7xl font-black leading-none uppercase italic tracking-tighter text-blue-400">
-                    {currentMoveIndex === -1 ? "READY?" : `Move: ${solution[currentMoveIndex]}`}
+                {/* Video-style Playbar */}
+                <div className="space-y-4">
+                  <div className="relative h-4 group cursor-pointer flex items-center">
+                    <input 
+                      type="range"
+                      min="-1"
+                      max={solution.length - 1}
+                      value={currentMoveIndex}
+                      onChange={(e) => handleSeek(parseInt(e.target.value))}
+                      disabled={isProcessing}
+                      className="absolute w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-blue-500 z-10"
+                    />
+                    <div 
+                      className="absolute h-2 bg-blue-500/50 rounded-full pointer-events-none transition-all duration-300"
+                      style={{ width: `${((currentMoveIndex + 1) / solution.length) * 100}%` }}
+                    />
+                  </div>
+                  
+                  {/* Playback Controls */}
+                  <div className="flex justify-between items-center px-2">
+                    <button 
+                      onClick={() => handleSeek(-1)}
+                      disabled={isProcessing || currentMoveIndex === -1}
+                      className="p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors disabled:opacity-20 cursor-pointer"
+                    >
+                      <RotateCcw size={20} />
+                    </button>
+                    
+                    <div className="flex gap-4">
+                      <button 
+                        onClick={handlePrevMove}
+                        disabled={isProcessing || currentMoveIndex < 0}
+                        className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center gap-2 font-bold disabled:opacity-20 cursor-pointer"
+                      >
+                        <Rewind size={24} fill="currentColor" />
+                        <span className="text-xs uppercase tracking-tighter">Back</span>
+                      </button>
+
+                      <button 
+                        onClick={handleNextMove}
+                        disabled={isProcessing || currentMoveIndex >= solution.length - 1}
+                        className="p-4 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-2xl flex items-center gap-2 font-bold disabled:opacity-20 cursor-pointer"
+                      >
+                        <span className="text-xs uppercase tracking-tighter">Next</span>
+                        <FastForward size={24} fill="currentColor" />
+                      </button>
+                    </div>
+
+                    <button 
+                      onClick={() => handleSeek(solution.length - 1)}
+                      disabled={isProcessing || currentMoveIndex === solution.length - 1}
+                      className="p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors disabled:opacity-20 cursor-pointer"
+                    >
+                      <CheckCircle size={20} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-4 md:space-y-6 min-h-[180px] bg-white/5 p-8 rounded-[2.5rem] border border-white/5">
+                  <h2 className="text-5xl md:text-8xl font-black leading-none uppercase italic tracking-tighter text-blue-400 text-center">
+                    {currentMoveIndex === -1 ? "READY" : solution[currentMoveIndex]}
                   </h2>
-                  <p className="text-gray-400 text-lg md:text-xl leading-relaxed font-medium">
-                    {currentMoveIndex === -1 ? "Tap the big button to begin." : "Follow the arrow on the 3D cube!"}
+                  <p className="text-gray-400 text-lg md:text-xl leading-relaxed font-medium text-center">
+                    {currentMoveIndex === -1 ? "Slide the bar or tap Next to begin." : "Perform this turn on your cube!"}
                   </p>
                 </div>
 
-                <button 
-                  onClick={handleNextMove}
-                  disabled={isProcessing}
-                  className="w-full btn-primary py-8 text-3xl font-black uppercase tracking-tight flex items-center justify-center gap-6 cursor-pointer shadow-2xl disabled:opacity-50"
-                >
-                  {currentMoveIndex === solution.length - 1 ? 'FINISH!' : 'NEXT MOVE'}
-                  <ArrowRight size={32} />
-                </button>
+                {currentMoveIndex === solution.length - 1 && !isProcessing ? (
+                  <button 
+                    onClick={() => setStep('done')}
+                    className="w-full btn-primary py-8 text-3xl font-black uppercase tracking-tight flex items-center justify-center gap-6 cursor-pointer shadow-2xl bg-green-500 text-white"
+                  >
+                    I'M DONE!
+                    <CheckCircle size={32} />
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handleNextMove}
+                    disabled={isProcessing || currentMoveIndex >= solution.length - 1}
+                    className="w-full btn-primary py-8 text-3xl font-black uppercase tracking-tight flex items-center justify-center gap-6 cursor-pointer shadow-2xl disabled:opacity-50"
+                  >
+                    {currentMoveIndex === -1 ? 'START' : 'NEXT MOVE'}
+                    <ArrowRight size={32} />
+                  </button>
+                )}
                 
                 <button 
                   onClick={() => { setStep('upload'); setCurrentMoveIndex(-1); setSolution([]); }}
@@ -255,7 +362,7 @@ const App = () => {
       </div>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-700 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.3.0 • Stable
+        Build v1.4.0 • Stable
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
@@ -267,10 +374,21 @@ const App = () => {
         }
         .btn-primary {
           border-radius: 2rem;
+          background: #3b82f6;
           transition: transform 0.1s;
         }
         .btn-primary:active {
           transform: scale(0.98);
+        }
+        input[type=range]::-webkit-slider-thumb {
+          appearance: none;
+          height: 24px;
+          width: 24px;
+          border-radius: 50%;
+          background: white;
+          cursor: pointer;
+          border: 4px solid #3b82f6;
+          box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
         }
       `}} />
     </div>

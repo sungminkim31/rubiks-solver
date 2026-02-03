@@ -72,11 +72,28 @@ export const Cube3D = forwardRef((_props, ref) => {
       moveQueue.current.push(move);
       processQueue();
     },
+    undoMove: (move: string) => {
+      const inverse = Cube.inverse(move);
+      moveQueue.current.push(inverse);
+      processQueue();
+    },
     getFacelets: () => {
         return mathCube.asString();
     },
     reset: () => {
-        window.location.reload();
+        mathCube.identity();
+        moveQueue.current = [];
+        isAnimating.current = false;
+        
+        // Reset cubies positions and rotations
+        cubiesRefs.current.forEach((cubie, i) => {
+          if (cubie) {
+            const initial = cubiesData[i];
+            cubie.position.set(...initial.pos);
+            cubie.rotation.set(0, 0, 0);
+            cubie.updateMatrix();
+          }
+        });
     }
   }));
 
