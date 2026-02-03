@@ -181,8 +181,8 @@ const App = () => {
             </div>
           </div>
           
-          <div className="flex-1 relative flex flex-col h-[60vh] md:h-auto">
-            <div className="flex-1 w-full h-full min-h-[400px]">
+          <div className="flex-1 relative flex flex-col h-[75vh] md:h-auto">
+            <div className="flex-1 w-full h-full min-h-[450px]">
               <Cube3D ref={cubeRef} />
             </div>
             
@@ -385,7 +385,7 @@ const App = () => {
       </div>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-700 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.7.0 • Stable
+        Build v1.8.0 • Stable
       </div>
 
       <AnimatePresence>
