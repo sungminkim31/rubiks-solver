@@ -255,7 +255,7 @@ const App = () => {
       </div>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-700 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.2.7 • Stable
+        Build v1.3.0 • Stable
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
