@@ -26,32 +26,32 @@ const COLOR_MAP: Record<string, string> = {
 
 const Cubie = ({ position, stickers, cubieRef }: { position: [number, number, number], stickers: string[], cubieRef: any }) => {
   return (
-    <group ref={cubieRef} position={position}>
-      <RoundedBox args={[0.96, 0.96, 0.96]} radius={0.1} smoothness={4}>
+    <group ref={cubieRef} position={position} scale={[1, 1, 1]}>
+      <RoundedBox args={[0.98, 0.98, 0.98]} radius={0.05} smoothness={4}>
         <meshStandardMaterial color={COLORS.K} />
       </RoundedBox>
-      <mesh position={[0, 0.48, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.82, 0.82]} />
+      <mesh position={[0, 0.501, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.9, 0.9]} />
         <meshStandardMaterial color={COLOR_MAP[stickers[0]] || COLORS.K} />
       </mesh>
-      <mesh position={[0, -0.48, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.82, 0.82]} />
+      <mesh position={[0, -0.501, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.9, 0.9]} />
         <meshStandardMaterial color={COLOR_MAP[stickers[1]] || COLORS.K} />
       </mesh>
-      <mesh position={[0, 0, 0.48]}>
-        <planeGeometry args={[0.82, 0.82]} />
+      <mesh position={[0, 0, 0.501]}>
+        <planeGeometry args={[0.9, 0.9]} />
         <meshStandardMaterial color={COLOR_MAP[stickers[2]] || COLORS.K} />
       </mesh>
-      <mesh position={[0, 0, -0.48]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[0.82, 0.82]} />
+      <mesh position={[0, 0, -0.501]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[0.9, 0.9]} />
         <meshStandardMaterial color={COLOR_MAP[stickers[3]] || COLORS.K} />
       </mesh>
-      <mesh position={[-0.48, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
-        <planeGeometry args={[0.82, 0.82]} />
+      <mesh position={[-0.501, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+        <planeGeometry args={[0.9, 0.9]} />
         <meshStandardMaterial color={COLOR_MAP[stickers[4]] || COLORS.K} />
       </mesh>
-      <mesh position={[0.48, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[0.82, 0.82]} />
+      <mesh position={[0.501, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[0.9, 0.9]} />
         <meshStandardMaterial color={COLOR_MAP[stickers[5]] || COLORS.K} />
       </mesh>
     </group>
