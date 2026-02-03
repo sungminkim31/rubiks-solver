@@ -149,16 +149,16 @@ const App = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8 overflow-x-hidden font-sans">
-      <div className="max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center lg:h-[90vh]">
+    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden font-sans">
+      <div className="max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-12 items-center lg:h-[90vh] p-0 md:p-8">
         
         {/* Left Side: 3D Visualization */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-panel p-4 md:p-6 w-full flex flex-col min-h-[500px] lg:h-full"
+          className="glass-panel p-2 md:p-6 w-full flex flex-col min-h-[450px] lg:h-full rounded-none md:rounded-[2.5rem] border-x-0 md:border-x"
         >
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-4 px-4 md:px-0">
             <div className="flex items-center gap-3">
                <div className="p-2 bg-blue-500/20 rounded-lg">
                  <Box className="text-blue-400" size={20} />
@@ -181,26 +181,26 @@ const App = () => {
             </div>
           </div>
           
-          <div className="flex-1 relative flex flex-col">
-            <div className="flex-1">
+          <div className="flex-1 relative flex flex-col h-[50vh] md:h-auto">
+            <div className="flex-1 w-full h-full">
               <Cube3D ref={cubeRef} />
             </div>
             
-            <div className="mt-4 flex flex-col gap-6">
+            <div className="mt-4 flex flex-col gap-6 px-4 md:px-0 pb-4">
                <div className="flex justify-center items-center gap-2 text-gray-400">
                  <Compass size={16} />
                  <span className="text-[10px] font-bold uppercase tracking-widest">Drag to Rotate Cube</span>
                </div>
 
-               <div className="grid grid-cols-3 gap-3 w-full">
+               <div className="grid grid-cols-3 gap-2 w-full">
                  {manualMoves.map(m => (
                    <button 
                     key={m.key}
                     onClick={() => cubeRef.current?.addMove(m.key)}
-                    className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/20 active:scale-95 transition-all cursor-pointer min-h-[90px]"
+                    className="flex flex-col items-center justify-center gap-1 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/20 active:scale-95 transition-all cursor-pointer min-h-[70px]"
                    >
-                     <div className="text-blue-400">{m.icon}</div>
-                     <span className="text-xs font-black tracking-widest">{m.label}</span>
+                     <div className="text-blue-400 scale-75">{m.icon}</div>
+                     <span className="text-[9px] font-black tracking-widest">{m.label}</span>
                    </button>
                  ))}
                </div>
@@ -209,7 +209,7 @@ const App = () => {
         </motion.div>
 
         {/* Right Side: Logic & Instructions */}
-        <div className="flex flex-col gap-6 w-full">
+        <div className="flex flex-col gap-6 w-full px-4 md:px-0">
           <AnimatePresence mode="wait">
             {step === 'upload' ? (
               <motion.div 
@@ -385,7 +385,7 @@ const App = () => {
       </div>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-700 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.5.0 • Stable
+        Build v1.6.0 • Stable
       </div>
 
       <AnimatePresence>
