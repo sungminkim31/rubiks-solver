@@ -124,8 +124,8 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden fixed inset-0 font-sans select-none touch-none">
-      <div className="h-full w-full flex flex-col items-center justify-between p-0">
+    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden font-sans select-none">
+      <div className="min-h-screen w-full flex flex-col items-center">
         
         {/* Top Header */}
         <div className="w-full flex justify-between items-center p-4 bg-black/40 backdrop-blur-xl border-b border-white/5 z-30">
@@ -140,20 +140,20 @@ const App = () => {
         </div>
 
         {/* Center: GIANT Cube Viewport */}
-        <div className="flex-1 w-full relative bg-[#0a0a0a] overflow-hidden flex items-center justify-center">
+        <div className="w-full h-[60vh] relative bg-[#0a0a0a] overflow-hidden flex items-center justify-center">
           <div className="absolute inset-0 z-0 flex items-center justify-center">
-            <div style={{ transform: 'scale(2.5)', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ transform: 'scale(1.8)', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Cube3D ref={cubeRef} />
             </div>
           </div>
 
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-10">
-             <Compass size={180} className="text-white/10 animate-pulse" />
+             <Compass size={120} className="text-white/10 animate-pulse" />
           </div>
         </div>
 
         {/* Bottom Panel: GIANT Player Controls */}
-        <div className="w-full bg-black/90 backdrop-blur-3xl border-t border-white/10 z-20 pb-12 pt-6 px-6 flex flex-col gap-8 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+        <div className="w-full flex-1 bg-black/90 backdrop-blur-3xl border-t border-white/10 z-20 pb-12 pt-6 px-6 flex flex-col gap-8 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
           <AnimatePresence mode="wait">
             {step === 'upload' ? (
               <motion.div key="upload" initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full space-y-6">
@@ -221,8 +221,8 @@ const App = () => {
 
       </div>
 
-      <div className="fixed bottom-1 left-1/2 -translate-x-1/2 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none z-50">
-        Build v1.11.0 • Stable
+      <div className="w-full text-center py-4 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none">
+        Build v1.12.0 • Stable
       </div>
 
       <AnimatePresence>
