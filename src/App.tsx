@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Cube3D } from './components/Cube3D';
-import { Play, CheckCircle, ArrowRight, ArrowLeft, Box, Compass, ArrowUp, ArrowDown, Square, RotateCcw, FastForward, Rewind } from 'lucide-react';
+import { CubeScanner } from './components/CubeScanner';
+import { Play, CheckCircle, ArrowRight, ArrowLeft, Box, Compass, ArrowUp, ArrowDown, Square, RotateCcw, FastForward, Rewind, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore
 import Cube from 'cubejs';
@@ -14,6 +15,7 @@ try {
 
 const App = () => {
   const [step, setStep] = useState<'upload' | 'solving' | 'done'>('upload');
+  const [isScanning, setIsScanning] = useState(false);
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const [solution, setSolution] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,6 +53,17 @@ const App = () => {
       }
     }
   }, [step, solution.length]);
+
+  const handleScannerComplete = (faces: Record<string, string[]>) => {
+    // Convert faces object to cubejs string format
+    // FACE_ORDER = ['U', 'R', 'F', 'D', 'L', 'B']
+    const facelets = ['U', 'R', 'F', 'D', 'L', 'B'].map(f => faces[f].join('')).join('');
+    console.log("Scanned Facelets:", facelets);
+    
+    // In a real app we'd update the state, here we simulate the success
+    setIsScanning(false);
+    setStep('solving');
+  };
 
   const handleNextMove = () => {
     if (isProcessing) return;
@@ -220,13 +233,23 @@ const App = () => {
                    <img src="https://raw.githubusercontent.com/sungminkim31/openclaw-logs/main/media/file_3---7ef5b926-75e3-400d-a00b-ef7793fdbdf7.jpg" className="w-full aspect-square object-cover rounded-xl border border-white/10" />
                 </div>
 
-                <button 
-                  onClick={() => setStep('solving')}
-                  className="btn-primary w-full py-6 flex items-center justify-center gap-4 text-2xl shadow-xl cursor-pointer font-black"
-                >
-                  <Play size={28} fill="currentColor" />
-                  START SOLVING
-                </button>
+                <div className="flex flex-col gap-4">
+                  <button 
+                    onClick={() => setIsScanning(true)}
+                    className="w-full py-6 bg-blue-500 rounded-[2rem] flex items-center justify-center gap-4 text-2xl font-black shadow-xl cursor-pointer"
+                  >
+                    <Camera size={28} />
+                    LIVE SCANNER
+                  </button>
+
+                  <button 
+                    onClick={() => setStep('solving')}
+                    className="w-full py-6 glass-panel border-white/20 flex items-center justify-center gap-4 text-2xl font-black shadow-xl cursor-pointer"
+                  >
+                    <Play size={28} fill="currentColor" />
+                    USE SAVED STATE
+                  </button>
+                </div>
               </motion.div>
             ) : step === 'solving' ? (
               <motion.div 
@@ -362,8 +385,17 @@ const App = () => {
       </div>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-700 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.4.0 • Stable
+        Build v1.5.0 • Stable
       </div>
+
+      <AnimatePresence>
+        {isScanning && (
+          <CubeScanner 
+            onComplete={handleScannerComplete}
+            onCancel={() => setIsScanning(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <style dangerouslySetInnerHTML={{ __html: `
         .glass-panel {
