@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, RefreshCw, CheckCircle, ArrowRight, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Camera, X } from 'lucide-react';
 
 interface ScannerProps {
   onComplete: (faces: Record<string, string[]>) => void;
