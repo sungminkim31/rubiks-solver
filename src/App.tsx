@@ -68,7 +68,6 @@ const App = () => {
   };
 
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
-  const autoPlayTimer = useRef<any>(null);
 
   useEffect(() => {
     let interval: any;
