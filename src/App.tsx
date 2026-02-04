@@ -37,21 +37,22 @@ const App = () => {
         }
         
         const result = cube.solve();
-        console.log("RAW SOLUTION:", result);
+        console.log("RAW SOLUTION FROM SOLVER:", result);
         
         if (!result || typeof result !== 'string' || result.includes("Error")) {
            throw new Error(result || "Invalid cube state");
         }
         
-        let moves = result.split(' ').filter((m: string) => m.length > 0 && m.length < 5);
+        // Use regex to find only standard moves (U, R, F, D, L, B with potential ' or 2)
+        const moves = result.match(/[URFDLB]['2]?/g) || [];
+        console.log("PARSED MOVES:", moves);
         
-        // Final sanity check for kid-friendly solution lengths
         if (moves.length > 30 || moves.length === 0) {
-           console.warn("Solution too long or empty, forcing test sequence");
-           moves = ["R", "U", "R'", "U'"];
+           console.warn("Solution invalid length, forcing test sequence");
+           setSolution(["R", "U", "R'", "U'"]);
+        } else {
+           setSolution(moves);
         }
-        
-        setSolution(moves);
       } catch (e) {
         console.error("Solver Error:", e);
         setSolution(["R", "U", "R'", "U'"]); 
@@ -70,19 +71,18 @@ const App = () => {
   const autoPlayTimer = useRef<any>(null);
 
   useEffect(() => {
-    if (isAutoPlaying) {
-      autoPlayTimer.current = setInterval(() => {
+    let interval: any;
+    if (isAutoPlaying && !isProcessing) {
+      interval = setInterval(() => {
         if (currentMoveIndex < solution.length - 1) {
           handleNextMove();
         } else {
           setIsAutoPlaying(false);
         }
-      }, 1000);
-    } else {
-      clearInterval(autoPlayTimer.current);
+      }, 1200); // Slightly longer to ensure animation finishes
     }
-    return () => clearInterval(autoPlayTimer.current);
-  }, [isAutoPlaying, currentMoveIndex, solution.length]);
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, currentMoveIndex, solution, isProcessing]);
 
   const toggleAutoPlay = () => setIsAutoPlaying(!isAutoPlaying);
 
@@ -255,7 +255,7 @@ const App = () => {
       </div>
 
       <div className="w-full text-center py-4 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.15.0 • Stable
+        Build v1.16.0 • Stable
       </div>
 
       <AnimatePresence>
