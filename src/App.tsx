@@ -47,7 +47,8 @@ const App = () => {
         const moves = result.match(/[URFDLB]['2]?/g) || [];
         console.log("PARSED MOVES:", moves);
         
-        if (moves.length > 30 || moves.length === 0) {
+        // Final sanity check for kid-friendly solution lengths
+        if (moves.length > 50 || moves.length === 0) {
            console.warn("Solution invalid length, forcing test sequence");
            setSolution(["R", "U", "R'", "U'"]);
         } else {
@@ -254,7 +255,7 @@ const App = () => {
       </div>
 
       <div className="w-full text-center py-4 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.16.0 • Stable
+        Build v1.17.0 • Stable
       </div>
 
       <AnimatePresence>
