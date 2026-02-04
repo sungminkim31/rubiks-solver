@@ -160,9 +160,9 @@ const App = () => {
           </div>
         </div>
 
-        {/* Center: GIANT Cube Viewport */}
-        <div className="w-full flex-1 relative bg-[#0a0a0a] overflow-hidden flex items-center justify-center p-4">
-          <div className="w-full h-full max-w-sm max-h-sm flex items-center justify-center scale-150 md:scale-100">
+        {/* Center: Cube Viewport */}
+        <div className="w-full flex-1 relative bg-[#0a0a0a] overflow-hidden flex items-center justify-center p-0">
+          <div className="w-full h-full flex items-center justify-center">
              <Cube3D ref={cubeRef} />
           </div>
         </div>
@@ -255,7 +255,7 @@ const App = () => {
       </div>
 
       <div className="w-full text-center py-4 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.14.0 • Stable
+        Build v1.15.0 • Stable
       </div>
 
       <AnimatePresence>
