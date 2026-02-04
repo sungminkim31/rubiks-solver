@@ -44,8 +44,8 @@ const App = () => {
         }
         
         // Use regex to find only standard moves (U, R, F, D, L, B with potential ' or 2)
-        const moves = result.match(/[URFDLB]['2]?/g) || [];
-        console.log("PARSED MOVES:", moves);
+        const moves = result.match(/[URFDLB]['2]?\s/g)?.map(m => m.trim()) || [];
+        console.log("CLEANED MOVES:", moves);
         
         // Final sanity check for kid-friendly solution lengths
         if (moves.length > 50 || moves.length === 0) {
@@ -189,10 +189,10 @@ const App = () => {
                     <span>STEP {currentMoveIndex + 1} OF {solution.length}</span>
                     <span>{Math.max(0, solution.length - (currentMoveIndex + 1))} TO GO</span>
                   </div>
-                  <div className="relative h-16 flex items-center bg-white/5 rounded-full px-6 overflow-hidden border border-white/5 shadow-inner">
-                    <input type="range" min="-1" max={solution.length - 1} value={currentMoveIndex} onChange={(e) => handleSeek(parseInt(e.target.value))} disabled={isProcessing} className="w-full h-full opacity-0 absolute inset-0 z-20 cursor-pointer" />
+                  <div className="relative h-16 flex items-center bg-white/5 rounded-full px-2 overflow-hidden border border-white/5 shadow-inner">
+                    <input type="range" min="-1" max={solution.length - 1} value={currentMoveIndex} onChange={(e) => handleSeek(parseInt(e.target.value))} disabled={isProcessing} className="w-[105%] h-full opacity-0 absolute -left-[2.5%] z-20 cursor-pointer" />
                     <div className="absolute left-0 top-0 bottom-0 bg-blue-500/20 transition-all duration-300 pointer-events-none" style={{ width: `${((currentMoveIndex + 1) / solution.length) * 100}%` }} />
-                    <div className="w-full h-3 bg-white/10 rounded-full relative overflow-hidden">
+                    <div className="w-full h-3 bg-white/10 rounded-full relative overflow-hidden mx-4">
                       <motion.div className="absolute inset-y-0 left-0 bg-blue-500" animate={{ width: `${((currentMoveIndex + 1) / solution.length) * 100}%` }} />
                     </div>
                   </div>
@@ -255,7 +255,7 @@ const App = () => {
       </div>
 
       <div className="w-full text-center py-4 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.17.0 • Stable
+        Build v1.18.0 • Stable
       </div>
 
       <AnimatePresence>
