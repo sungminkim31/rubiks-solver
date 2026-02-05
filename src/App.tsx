@@ -64,6 +64,11 @@ const App = () => {
   const handleScannerComplete = (faces: Record<string, string[]>) => {
     const facelets = ['U', 'R', 'F', 'D', 'L', 'B'].map(f => faces[f].join('')).join('');
     console.log("Scanned Facelets:", facelets);
+    
+    if (cubeRef.current) {
+      cubeRef.current.setFacelets(facelets);
+    }
+    
     setIsScanning(false);
     setStep('solving');
   };
@@ -258,7 +263,7 @@ const App = () => {
       </div>
 
       <div className="fixed bottom-1 left-1/2 -translate-x-1/2 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none z-50">
-        Build v1.20.0 • Stable
+        Build v1.21.0 • Stable
       </div>
 
       <AnimatePresence>

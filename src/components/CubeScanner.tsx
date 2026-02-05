@@ -40,13 +40,53 @@ export const CubeScanner = ({ onComplete, onCancel }: ScannerProps) => {
     if (!ctx) return;
 
     // Draw video frame to canvas
-    ctx.drawImage(videoRef.current, 0, 0, 300, 300);
+    const size = 300;
+    canvasRef.current.width = size;
+    canvasRef.current.height = size;
     
-    // Grid detection logic placeholder
-    // In a real implementation, we'd use color sampling here
-    // For now, we simulate detection of the face colors
-    const mockColors = ['W', 'R', 'G', 'Y', 'B', 'O'];
-    const detectedColors = Array(9).fill(0).map(() => mockColors[Math.floor(Math.random() * mockColors.length)]);
+    // Capture the center square of the video
+    const video = videoRef.current;
+    const minDim = Math.min(video.videoWidth, video.videoHeight);
+    const sx = (video.videoWidth - minDim) / 2;
+    const sy = (video.videoHeight - minDim) / 2;
+    
+    ctx.drawImage(video, sx, sy, minDim, minDim, 0, 0, size, size);
+    
+    // Grid sampling logic
+    const detectedColors: string[] = [];
+    const cellSize = size / 3;
+    const sampleSize = 20; // px
+    
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const x = col * cellSize + cellSize / 2;
+        const y = row * cellSize + cellSize / 2;
+        
+        const pixelData = ctx.getImageData(x - sampleSize/2, y - sampleSize/2, sampleSize, sampleSize).data;
+        
+        let r = 0, g = 0, b = 0;
+        for (let i = 0; i < pixelData.length; i += 4) {
+          r += pixelData[i];
+          g += pixelData[i+1];
+          b += pixelData[i+2];
+        }
+        const count = pixelData.length / 4;
+        r /= count; g /= count; b /= count;
+        
+        // Simple color classifier
+        let color = 'K';
+        const max = Math.max(r, g, b);
+        
+        if (r > 150 && g > 150 && b > 150) color = 'W'; // White
+        else if (r > 150 && g > 150 && b < 100) color = 'Y'; // Yellow
+        else if (r > 150 && g < 100 && b < 100) color = 'R'; // Red
+        else if (r > 150 && g < 150 && b < 100) color = 'O'; // Orange (simplified)
+        else if (g > 100 && r < 100 && b < 100) color = 'G'; // Green
+        else if (b > 100 && r < 100 && g < 100) color = 'B'; // Blue
+        
+        detectedColors.push(color);
+      }
+    }
     
     const faceKey = FACE_ORDER[currentFaceIndex];
     const newScanned = { ...scannedFaces, [faceKey]: detectedColors };
@@ -63,48 +103,48 @@ export const CubeScanner = ({ onComplete, onCancel }: ScannerProps) => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center p-4"
     >
-      <div className="w-full max-w-md relative">
-        <button onClick={onCancel} className="absolute top-0 right-0 p-4 text-white z-10"><X size={32} /></button>
+      <div className="w-full max-w-md relative flex flex-col h-full">
+        <button onClick={onCancel} className="absolute top-0 right-0 p-4 text-white z-10 hover:text-red-400 transition-colors"><X size={40} /></button>
         
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-black text-blue-400 uppercase tracking-widest mb-2">Scan {FACE_NAMES[currentFaceIndex]} Face</h2>
-          <p className="text-gray-400">Align the cube in the square</p>
+        <div className="text-center mt-8 mb-4">
+          <h2 className="text-3xl font-black text-blue-400 uppercase tracking-widest mb-2">Scan {FACE_NAMES[currentFaceIndex]}</h2>
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+            <p className="text-white font-bold">Align the cube face</p>
+          </div>
         </div>
 
-        <div className="relative aspect-square w-full bg-gray-900 rounded-[3rem] overflow-hidden border-4 border-blue-500/30">
-          <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover grayscale opacity-50" />
+        <div className="relative aspect-square w-full bg-gray-900 rounded-[3rem] overflow-hidden border-4 border-blue-500 shadow-[0_0_50px_rgba(59,130,246,0.3)]">
+          <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
           
-          {/* Overlay Grid */}
-          <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 p-8 gap-2 pointer-events-none">
-            {Array(9).fill(0).map((_, i) => (
-              <div key={i} className="border-2 border-white/20 rounded-xl" />
+          {/* Visual Feedback: Scanned Faces mini-grid */}
+          <div className="absolute top-4 left-4 grid grid-cols-3 gap-1 bg-black/50 p-2 rounded-xl backdrop-blur-md border border-white/10">
+            {FACE_ORDER.map((f, i) => (
+              <div key={f} className={`w-4 h-4 rounded-sm border ${scannedFaces[f] ? 'bg-green-500' : i === currentFaceIndex ? 'bg-blue-500 animate-pulse' : 'bg-white/10'}`} />
             ))}
           </div>
 
-          {/* Central Guide */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-             <div className="w-2/3 h-2/3 border-2 border-blue-500 rounded-[2rem] animate-pulse" />
+          {/* Overlay Grid */}
+          <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 p-12 gap-4 pointer-events-none">
+            {Array(9).fill(0).map((_, i) => (
+              <div key={i} className="border-4 border-white/40 rounded-2xl shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+            ))}
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4">
+        <div className="flex-1 flex flex-col justify-center gap-6 py-8">
           <button 
             onClick={captureFace}
-            className="w-full py-6 bg-blue-500 rounded-[2rem] text-2xl font-black uppercase flex items-center justify-center gap-4 shadow-xl"
+            className="w-full py-10 bg-blue-500 rounded-[3rem] text-4xl font-black uppercase flex items-center justify-center gap-6 shadow-[0_20px_50px_rgba(59,130,246,0.4)] active:scale-95 transition-all"
           >
-            <Camera size={28} />
-            Capture Face
+            <Camera size={48} />
+            Capture
           </button>
           
-          <div className="flex justify-center gap-2 mt-4">
-            {FACE_ORDER.map((f, i) => (
-              <div 
-                key={f} 
-                className={`w-3 h-3 rounded-full ${i === currentFaceIndex ? 'bg-blue-400' : scannedFaces[f] ? 'bg-green-500' : 'bg-white/10'}`} 
-              />
-            ))}
+          <div className="text-center">
+            <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Capture all 6 faces to solve</p>
           </div>
         </div>
       </div>
