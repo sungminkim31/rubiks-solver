@@ -43,8 +43,8 @@ const App = () => {
            throw new Error(result || "Invalid cube state");
         }
         
-        // Use regex to find only standard moves (U, R, F, D, L, B with potential ' or 2)
-        const moves = result.match(/[URFDLB]['2]?\s/g)?.map(m => m.trim()) || [];
+        // Use standard move parsing
+        const moves = result.trim().split(/\s+/).filter(m => /^[URFDLB][2']?$/.test(m));
         console.log("CLEANED MOVES:", moves);
         
         // Final sanity check for kid-friendly solution lengths
@@ -79,7 +79,7 @@ const App = () => {
         } else {
           setIsAutoPlaying(false);
         }
-      }, 1200); // Slightly longer to ensure animation finishes
+      }, 1200);
     }
     return () => clearInterval(interval);
   }, [isAutoPlaying, currentMoveIndex, solution, isProcessing]);
@@ -146,9 +146,8 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden font-sans select-none">
-      <div className="w-full flex flex-col items-center">
+      <div className="min-h-screen w-full flex flex-col items-center">
         
-        {/* Top Header */}
         <div className="w-full flex justify-between items-center p-4 bg-black/40 border-b border-white/5 z-30">
           <div className="flex items-center gap-2">
              <Box className="text-blue-400" size={18} />
@@ -160,14 +159,12 @@ const App = () => {
           </div>
         </div>
 
-        {/* Center: Cube Viewport */}
         <div className="w-full flex-1 relative bg-[#0a0a0a] overflow-hidden flex items-center justify-center p-0">
           <div className="w-full h-full flex items-center justify-center">
              <Cube3D ref={cubeRef} />
           </div>
         </div>
 
-        {/* Bottom Panel: Player Controls */}
         <div className="w-full bg-black/90 border-t border-white/10 z-20 pb-12 pt-6 px-6 flex flex-col gap-8 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
           <AnimatePresence mode="wait">
             {step === 'upload' ? (
@@ -183,29 +180,41 @@ const App = () => {
               </motion.div>
             ) : step === 'solving' ? (
               <motion.div key="solving" initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full space-y-8">
-                {/* Visual Progress Bar */}
+                
                 <div className="space-y-4">
-                  <div className="flex justify-between text-[12px] font-black text-blue-400 tracking-[0.2em]">
-                    <span>STEP {currentMoveIndex + 1} OF {solution.length}</span>
-                    <span>{Math.max(0, solution.length - (currentMoveIndex + 1))} TO GO</span>
-                  </div>
-                  <div className="relative h-16 flex items-center bg-white/5 rounded-full px-2 overflow-hidden border border-white/5 shadow-inner">
-                    <input type="range" min="-1" max={solution.length - 1} value={currentMoveIndex} onChange={(e) => handleSeek(parseInt(e.target.value))} disabled={isProcessing} className="w-[105%] h-full opacity-0 absolute -left-[2.5%] z-20 cursor-pointer" />
-                    <div className="absolute left-0 top-0 bottom-0 bg-blue-500/20 transition-all duration-300 pointer-events-none" style={{ width: `${((currentMoveIndex + 1) / solution.length) * 100}%` }} />
-                    <div className="w-full h-3 bg-white/10 rounded-full relative overflow-hidden mx-4">
-                      <motion.div className="absolute inset-y-0 left-0 bg-blue-500" animate={{ width: `${((currentMoveIndex + 1) / solution.length) * 100}%` }} />
+                  <div className="text-center">
+                    <span className="text-[18px] font-black text-blue-400 tracking-[0.1em] uppercase">
+                      STEP {currentMoveIndex + 1} OF {solution.length}
+                    </span>
+                    <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mt-1">
+                      {Math.max(0, solution.length - (currentMoveIndex + 1))} moves left
                     </div>
+                  </div>
+                  
+                  <div className="relative h-12 flex items-center group">
+                    <div className="absolute inset-x-0 h-2 bg-white/5 rounded-full" />
+                    <div 
+                      className="absolute h-2 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300"
+                      style={{ width: `${((currentMoveIndex + 1) / solution.length) * 100}%`, left: 0 }}
+                    />
+                    <input 
+                      type="range"
+                      min="-1"
+                      max={solution.length - 1}
+                      value={currentMoveIndex}
+                      onChange={(e) => handleSeek(parseInt(e.target.value))}
+                      disabled={isProcessing}
+                      className="absolute w-full h-full opacity-0 z-20 cursor-pointer"
+                    />
                   </div>
                 </div>
 
-                {/* MOVE DISPLAY */}
                 <div className="h-48 flex flex-col items-center justify-center bg-white/5 rounded-[3.5rem] border border-white/10 shadow-inner">
                   <h2 className="text-[120px] font-black leading-none uppercase italic tracking-tighter text-blue-400 drop-shadow-2xl">
                     {currentMoveIndex === -1 ? "GO" : solution[currentMoveIndex]}
                   </h2>
                 </div>
 
-                {/* GIANT BUTTONS */}
                 <div className="flex flex-col gap-4">
                   <button 
                     onClick={toggleAutoPlay}
@@ -216,19 +225,11 @@ const App = () => {
                   </button>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <button 
-                      onClick={handlePrevMove}
-                      disabled={isProcessing || currentMoveIndex < 0}
-                      className="py-10 bg-white/5 rounded-[2.5rem] flex items-center justify-center gap-4 text-white/50 active:bg-white/10 disabled:opacity-5 shadow-lg border border-white/5"
-                    >
+                    <button onClick={handlePrevMove} disabled={isProcessing || currentMoveIndex < 0} className="py-10 bg-white/5 rounded-[2.5rem] flex items-center justify-center gap-4 text-white/50 active:bg-white/10 disabled:opacity-5">
                       <Rewind size={48} fill="currentColor" />
                       <span className="font-black text-2xl">BACK</span>
                     </button>
-                    <button 
-                      onClick={currentMoveIndex === solution.length - 1 ? () => setStep('done') : handleNextMove}
-                      disabled={isProcessing || (currentMoveIndex >= solution.length - 1 && solution.length === 0)}
-                      className={`py-10 rounded-[2.5rem] flex items-center justify-center gap-4 text-white shadow-[0_20px_50px_rgba(59,130,246,0.4)] active:scale-95 transition-all ${currentMoveIndex === solution.length - 1 ? 'bg-green-500' : 'bg-blue-600'}`}
-                    >
+                    <button onClick={currentMoveIndex === solution.length - 1 ? () => setStep('done') : handleNextMove} disabled={isProcessing || (currentMoveIndex >= solution.length - 1 && solution.length === 0)} className={`py-10 rounded-[2.5rem] flex items-center justify-center gap-4 text-white shadow-[0_20px_50px_rgba(59,130,246,0.4)] active:scale-95 transition-all ${currentMoveIndex === solution.length - 1 ? 'bg-green-500' : 'bg-blue-600'}`}>
                       <span className="font-black text-3xl">{currentMoveIndex === solution.length - 1 ? 'DONE' : 'NEXT'}</span>
                       <FastForward size={48} fill="currentColor" />
                     </button>
@@ -254,8 +255,8 @@ const App = () => {
 
       </div>
 
-      <div className="w-full text-center py-4 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none">
-        Build v1.18.0 • Stable
+      <div className="fixed bottom-1 left-1/2 -translate-x-1/2 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none z-50">
+        Build v1.19.0 • Stable
       </div>
 
       <AnimatePresence>
