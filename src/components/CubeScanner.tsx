@@ -75,7 +75,6 @@ export const CubeScanner = ({ onComplete, onCancel }: ScannerProps) => {
         
         // Simple color classifier
         let color = 'K';
-        const max = Math.max(r, g, b);
         
         if (r > 150 && g > 150 && b > 150) color = 'W'; // White
         else if (r > 150 && g > 150 && b < 100) color = 'Y'; // Yellow
