@@ -137,11 +137,13 @@ const App = () => {
   };
 
   const handleScramble = () => {
-    const moves = ["U", "D", "L", "R", "F", "B", "U'", "D'", "L'", "R'", "F'", "B'", "U2", "D2", "L2", "R2", "F2", "B2"];
-    for (let i = 0; i < 20; i++) {
-      const move = moves[Math.floor(Math.random() * moves.length)];
-      setTimeout(() => cubeRef.current?.addMove(move), i * 100);
-    }
+    // Generate a high-quality random scramble sequence using the solver library
+    const scrambleMoves = Cube.scramble().split(' ');
+    
+    // Apply each move with a short delay for visual feedback
+    scrambleMoves.forEach((move: string, i: number) => {
+      setTimeout(() => cubeRef.current?.addMove(move), i * 80);
+    });
   };
 
   return (
@@ -256,7 +258,7 @@ const App = () => {
       </div>
 
       <div className="fixed bottom-1 left-1/2 -translate-x-1/2 text-[8px] text-white/10 font-mono tracking-widest uppercase pointer-events-none z-50">
-        Build v1.19.0 • Stable
+        Build v1.20.0 • Stable
       </div>
 
       <AnimatePresence>
